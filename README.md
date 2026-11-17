@@ -13,3 +13,7 @@ Until the date in `lib/auth.js` (DEFAULT_OPEN_UNTIL, or the OPEN_UNTIL env var),
 anyone who opens the site gets in without a password, and that browser stays
 remembered with no Lock button. After that date, new visitors need UPLOAD_PASSWORD.
 Changing UPLOAD_PASSWORD signs out every remembered browser.
+
+## Simple version for Kindle / old browsers
+`/lite` is a plain-HTML page (no JavaScript): file list with download links and a
+basic upload form (4 MB max there). Old browsers are redirected to it automatically.

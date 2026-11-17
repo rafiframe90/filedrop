@@ -9,6 +9,15 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* Old browsers (Kindle etc.) can't run this page: send them to the plain version. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              'try{new Function("var o={};o?.a;o??1;class K{#p=1}")}catch(e){location.replace("/lite")}',
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

@@ -160,7 +160,15 @@ export default function Home() {
     if (!res.ok) loadFiles(password);
   }
 
-  if (booting) return <main className="gate"><p className="muted">Loading…</p></main>;
+  if (booting)
+    return (
+      <main className="gate">
+        <div style={{ textAlign: "center" }}>
+          <p className="muted">Loading…</p>
+          <p className="muted small">Stuck? <a href="/lite">Open the simple version</a> (for Kindle and old browsers)</p>
+        </div>
+      </main>
+    );
 
   if (password === null) {
     return (
