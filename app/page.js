@@ -33,7 +33,9 @@ function extOf(name) {
 }
 
 export default function Home() {
-  const [password, setPassword] = useState(null);
+  const [password, setPassword] = useState(null); // null = locked
+  const [remembered, setRemembered] = useState(false); // browser has permanent access
+  const [booting, setBooting] = useState(true);
   const [pwInput, setPwInput] = useState("");
   const [pwError, setPwError] = useState("");
   const [checking, setChecking] = useState(false);
@@ -60,14 +62,25 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    let saved = null;
-    try { saved = localStorage.getItem(PW_KEY); } catch {}
-    if (saved) {
-      loadFiles(saved).then((ok) => {
+    (async () => {
+      try {
+        const res = await fetch("/api/session", { cache: "no-store" });
+        const data = await res.json();
+        if (data.remembered) {
+          setRemembered(true);
+          setPassword("");
+          await loadFiles("");
+          return;
+        }
+      } catch {}
+      let saved = null;
+      try { saved = localStorage.getItem(PW_KEY); } catch {}
+      if (saved) {
+        const ok = await loadFiles(saved).catch(() => false);
         if (ok) setPassword(saved);
         else { try { localStorage.removeItem(PW_KEY); } catch {} }
-      });
-    }
+      }
+    })().finally(() => setBooting(false));
   }, [loadFiles]);
 
   async function signIn(e) {
@@ -91,7 +104,7 @@ export default function Home() {
   const startUploads = useCallback(
     (fileList) => {
       const list = Array.from(fileList || []);
-      if (!list.length || !password) return;
+      if (!list.length || password === null) return;
       list.forEach((file) => {
         const id = `${Date.now()}-${Math.random()}`;
         setUploads((u) => [{ id, name: file.name, size: file.size, pct: 0, status: "uploading" }, ...u]);
@@ -120,7 +133,7 @@ export default function Home() {
   );
 
   useEffect(() => {
-    if (!password) return;
+    if (password === null) return;
     const onPaste = (e) => {
       if (e.clipboardData?.files?.length) startUploads(e.clipboardData.files);
     };
@@ -147,7 +160,9 @@ export default function Home() {
     if (!res.ok) loadFiles(password);
   }
 
-  if (!password) {
+  if (booting) return <main className="gate"><p className="muted">Loading…</p></main>;
+
+  if (password === null) {
     return (
       <main className="gate">
         <form onSubmit={signIn} className="gate-card">
@@ -182,7 +197,7 @@ export default function Home() {
     >
       <header>
         <div className="logo">drop<span>.</span></div>
-        <button className="ghost" onClick={signOut}>Lock</button>
+        {!remembered && <button className="ghost" onClick={signOut}>Lock</button>}
       </header>
 
       <button className={`zone ${dragging ? "over" : ""}`} onClick={() => inputRef.current?.click()}>

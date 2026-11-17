@@ -1,6 +1,6 @@
 import { list, del } from "@vercel/blob";
 import { NextResponse } from "next/server";
-import { checkPassword } from "../../../lib/auth";
+import { isAuthorized } from "../../../lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,7 @@ function denied() {
 }
 
 export async function GET(request) {
-  if (!checkPassword(request.headers.get("x-password"))) return denied();
+  if (!isAuthorized(request, request.headers.get("x-password"))) return denied();
   const blobs = [];
   let cursor;
   do {
@@ -30,7 +30,7 @@ export async function GET(request) {
 }
 
 export async function DELETE(request) {
-  if (!checkPassword(request.headers.get("x-password"))) return denied();
+  if (!isAuthorized(request, request.headers.get("x-password"))) return denied();
   const { url } = await request.json();
   if (!url) return NextResponse.json({ error: "Missing url" }, { status: 400 });
   await del(url);

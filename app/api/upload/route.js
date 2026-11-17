@@ -1,6 +1,6 @@
 import { handleUpload } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
-import { checkPassword } from "../../../lib/auth";
+import { isAuthorized } from "../../../lib/auth";
 
 export async function POST(request) {
   const body = await request.json();
@@ -9,7 +9,7 @@ export async function POST(request) {
       body,
       request,
       onBeforeGenerateToken: async (pathname, clientPayload) => {
-        if (!checkPassword(clientPayload)) throw new Error("Wrong password");
+        if (!isAuthorized(request, clientPayload)) throw new Error("Wrong password");
         return {
           // no allowedContentTypes => every file type is accepted
           addRandomSuffix: true,
